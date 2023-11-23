@@ -3,25 +3,17 @@
   when: ansible_os_family == "RedHat"
   block:
 
-    - name: Install prerequisites
-      ansible.builtin.yum:
-        name: gnupg2
-        update_cache: true
-
-    - name: Clean yum repository
-      ansible.builtin.file:
-        state: absent
-        path: /etc/yum.repos.d/postgresql.repo
-      changed_when: false
-
     - name: Install PostgreSQL yum repo
-      ansible.builtin.yum:
-        name: "{{ _postgresql_package }}"
-        update_cache: true
+      ansible.builtin.rpm_key:
+        key: "{{ _postgresql_key }}"
       vars:
         _postgresql_redhat: "EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
-        _postgresql_package: "https://download.postgresql.org/pub/repos/yum/reporpms/{{ _postgresql_redhat }}"
+        _postgresql_key: "https://download.postgresql.org/pub/repos/yum/reporpms/{{ _postgresql_redhat }}"
       changed_when: false
+
+    - name: Update yum cache
+      ansible.builtin.yum:
+        update_cache: true
 
 - name: Install PostgreSQL in debian
   when: ansible_os_family == "Debian"
