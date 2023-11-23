@@ -1,0 +1,60 @@
+---
+- name: Install PostgreSQL in redhat
+  when: ansible_os_family == "RedHat"
+  block:
+
+    - name: Install prerequisites
+      ansible.builtin.yum:
+        name: gnupg2
+        update_cache: true
+
+    - name: Clean yum repository
+      ansible.builtin.file:
+        state: absent
+        path: /etc/yum.repos.d/postgresql.repo
+      changed_when: false
+
+    - name: Install PostgreSQL yum repo
+      ansible.builtin.yum:
+        name: "{{ _postgresql_package }}"
+        update_cache: true
+      vars:
+        _postgresql_redhat: "EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
+        _postgresql_package: "https://download.postgresql.org/pub/repos/yum/reporpms/{{ _postgresql_redhat }}"
+      changed_when: false
+
+- name: Install PostgreSQL in debian
+  when: ansible_os_family == "Debian"
+  block:
+
+    - name: Install prerequisites
+      ansible.builtin.apt:
+        name:
+          - gpg-agent
+          - gnupg
+        update_cache: true
+
+    - name: Install PostgreSQL apt key
+      ansible.builtin.apt_key:
+        url: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
+
+    - name: Clean apt repository
+      ansible.builtin.file:
+        state: absent
+        path: /etc/apt/sources.list.d/postgresql.list
+      changed_when: false
+
+    - name: Add apt repository
+      ansible.builtin.apt_repository:
+        filename: postgresql
+        repo: "{{ _repo }}"
+      vars:
+        _is_debian: "{{ ansible_distribution == 'Debian' }}"
+        _repo_postgresql: "deb [ arch=amd64,arm64]"
+        _repo_ubuntu_url: "{{ _repo_postgresql }} http://apt.postgresql.org/pub/repos/apt"
+        _repo: "{{ _repo_ubuntu_url }} {{ ansible_distribution_release | lower }}-pgdg main"
+      changed_when: false
+
+    - name: Update apt repos
+      ansible.builtin.apt:
+        update_cache: true
