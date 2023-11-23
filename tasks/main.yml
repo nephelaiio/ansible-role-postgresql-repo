@@ -4,10 +4,12 @@
   block:
 
     - name: Install PostgreSQL yum repo
-      ansible.builtin.rpm_key:
-        key: "{{ _postgresql_key }}"
+      ansible.builtin.yum:
+        name: "{{ _postgresql_key }}"
+        disable_gpg_check: true
       vars:
-        _postgresql_redhat: "EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
+        _postgresql_distro: "EL-{{ ansible_distribution_major_version }}-x86_64"
+        _postgresql_redhat: "{{ _postgresql_distro }}/pgdg-redhat-repo-latest.noarch.rpm"
         _postgresql_key: "https://download.postgresql.org/pub/repos/yum/reporpms/{{ _postgresql_redhat }}"
       changed_when: false
 
