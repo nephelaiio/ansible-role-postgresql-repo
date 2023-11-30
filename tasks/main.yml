@@ -16,6 +16,7 @@
     - name: Update yum cache
       ansible.builtin.yum:
         update_cache: true
+        disablerepo: "pgdg*"
 
 - name: Install PostgreSQL in debian
   when: ansible_os_family == "Debian"
