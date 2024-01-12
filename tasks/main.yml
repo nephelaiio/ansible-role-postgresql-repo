@@ -41,6 +41,7 @@
         _repo: "{{ _repo_ubuntu_url }} {{ ansible_distribution_release | lower }}-pgdg main"
       changed_when: false
 
-    - name: Update apt repos
+    - name: Install pgdg keyring
       ansible.builtin.apt:
+        name: pgdg-keyring
         update_cache: true

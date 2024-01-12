@@ -1,0 +1,13 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Install postgresql deb package
+      ansible.builtin.package:
+        name: postgresql-12
+      when: ansible_os_family == "Debian"
+
+    - name: Install postgresql yum package
+      ansible.builtin.package:
+        name: postgresql12-server
+      when: ansible_os_family == "RedHat"
