@@ -12,6 +12,10 @@
         _postgresql_key: "https://download.postgresql.org/pub/repos/yum/reporpms/{{ _postgresql_redhat }}"
       changed_when: false
 
+    - name: Disable built-in postgresql module
+      ansible.builtin.command: dnf -qy module disable postgresql
+      changed_when: false
+
     - name: Update yum cache
       ansible.builtin.yum:
         update_cache: true
