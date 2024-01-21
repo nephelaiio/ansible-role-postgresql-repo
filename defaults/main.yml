@@ -1,3 +1,2 @@
 ---
 postgresql_repo_state: present
-postgresql_repo_release: 15

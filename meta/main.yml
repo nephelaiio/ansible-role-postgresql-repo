@@ -17,5 +17,4 @@ galaxy_info:
         - all
   galaxy_tags: ['postgresql', 'repo']
 
-dependencies:
-  - role: nephelaiio.plugins
+dependencies: []
