@@ -4,12 +4,12 @@
   vars:
     _pgsql_release: 15
   tasks:
-    - name: Install postgresql deb package
+    - name: Install PostgreSQL deb package
       ansible.builtin.package:
         name: "postgresql-{{ _pgsql_release }}"
       when: ansible_os_family == "Debian"
 
-    - name: Install postgresql yum package
+    - name: Install PostgreSQL yum package
       ansible.builtin.package:
         name: "postgresql{{ _pgsql_release }}-server"
       when: ansible_os_family == "RedHat"
