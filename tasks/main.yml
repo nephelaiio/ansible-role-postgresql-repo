@@ -49,3 +49,4 @@
       ansible.builtin.apt:
         name: pgdg-keyring
         update_cache: true
+      changed_when: false
