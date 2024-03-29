@@ -44,9 +44,3 @@
         _repo_ubuntu_url: "{{ _repo_postgresql }} http://apt.postgresql.org/pub/repos/apt"
         _repo: "{{ _repo_ubuntu_url }} {{ ansible_distribution_release | lower }}-pgdg main"
       changed_when: false
-
-    - name: Install pgdg keyring
-      ansible.builtin.apt:
-        name: pgdg-keyring
-        update_cache: true
-      changed_when: false
