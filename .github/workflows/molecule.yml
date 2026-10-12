@@ -18,7 +18,7 @@ jobs:
         image:
           - name: ubuntu2204
             command: /lib/systemd/systemd
-          - name: ubuntu2004
+          - name: ubuntu2404
             command: /lib/systemd/systemd
           - name: debian12
             command: /lib/systemd/systemd
