@@ -32,7 +32,7 @@ Role is tested against the following distributions (docker images):
 - Ubuntu Noble
 - Ubuntu Jammy
 - Debian Bookworm
-- RockyLinux 9
+- RockyLinux 10
 
 You can test the role directly from sources using command `molecule test`
 
