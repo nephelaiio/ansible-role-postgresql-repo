@@ -1,2 +1,4 @@
 ---
+postgresql_repo_gpg_key: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+postgresql_repo_url: https://apt.postgresql.org/pub/repos/apt
 postgresql_repo_state: present

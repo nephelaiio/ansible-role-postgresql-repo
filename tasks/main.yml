@@ -1,13 +1,13 @@
 ---
 - name: Install yum PostgreSQL repo
-  when: ansible_os_family == "RedHat"
+  when: ansible_facts.os_family == "RedHat"
   block:
-    - name: Install PostgreSQL yum repo
-      ansible.builtin.yum:
+    - name: Install PostgreSQL dnf repo
+      ansible.builtin.dnf:
         name: "{{ _postgresql_key }}"
         disable_gpg_check: true
       vars:
-        _postgresql_distro: "EL-{{ ansible_distribution_major_version }}-x86_64"
+        _postgresql_distro: "EL-{{ ansible_facts.distribution_major_version }}-x86_64"
         _postgresql_redhat: "{{ _postgresql_distro }}/pgdg-redhat-repo-latest.noarch.rpm"
         _postgresql_key: "https://download.postgresql.org/pub/repos/yum/reporpms/{{ _postgresql_redhat }}"
       changed_when: false
@@ -16,31 +16,75 @@
       ansible.builtin.command: dnf -qy module disable postgresql
       changed_when: false
 
-    - name: Update yum cache
-      ansible.builtin.yum:
+    - name: Update dnf cache
+      ansible.builtin.dnf:
         update_cache: true
         disablerepo: "pgdg*"
 
 - name: Install apt PostgreSQL repo
-  when: ansible_os_family == "Debian"
+  when: ansible_facts.os_family == "Debian"
   block:
+    - name: Clean apt repository
+      ansible.builtin.file:
+        state: absent
+        path: "{{ item }}"
+      loop:
+        - "/etc/apt/sources.list.d/postgresql.list"
+        - "/etc/apt/sources.list.d/postgresql.sources"
+      changed_when: false
+
     - name: Install prerequisites
       ansible.builtin.apt:
         name:
           - gpg-agent
           - gnupg
+          - apt-transport-https
+          - python3-debian
         update_cache: true
 
-    - name: Install PostgreSQL apt key
-      ansible.builtin.apt_key:
-        url: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
-
-    - name: Add apt repository
-      ansible.builtin.apt_repository:
-        filename: postgresql
-        repo: "{{ _repo }}"
+    - name: Set apt repository facts
+      ansible.builtin.set_fact:
+        is_deb882: "{{ is_deb882_debian or is_deb882_ubuntu }}"
       vars:
-        _repo_postgresql: "deb [arch=amd64,arm64]"
-        _repo_ubuntu_url: "{{ _repo_postgresql }} http://apt.postgresql.org/pub/repos/apt"
-        _repo: "{{ _repo_ubuntu_url }} {{ ansible_distribution_release | lower }}-pgdg main"
+        _distro: "{{ ansible_facts.distribution }}"
+        _distro_ver: "{{ ansible_facts.distribution_version }}"
+        is_deb882_debian: "{{ (_distro == 'Debian') and (_distro_ver is version('11', '>=')) }}"
+        is_deb882_ubuntu: "{{ (_distro == 'Ubuntu') and (_distro_ver is version('22.04', '>=')) }}"
+
+    - name: Deploy legacy apt repository definition
+      when: not is_deb882 | bool
+      block:
+        - name: Install PostgreSQL apt key
+          ansible.builtin.apt_key:
+            url: "{{ postgresql_repo_gpg_key }}"
+
+        - name: Add apt repository
+          ansible.builtin.apt_repository:
+            filename: postgresql
+            repo: "{{ _repo }}"
+          vars:
+            _repo_postgresql: "deb [arch=amd64,arm64]"
+            _repo_ubuntu_url: "{{ _repo_postgresql }} {{ postgresql_repo_url }}"
+            _repo: "{{ _repo_ubuntu_url }} {{ ansible_facts.distribution_release | lower }}-pgdg main"
+          changed_when: false
+
+    - name: Install deb882 repository
+      ansible.builtin.deb822_repository:
+        name: postgresql
+        uris: "{{ postgresql_repo_url }}"
+        suites: "{{ ansible_facts.distribution_release }}-pgdg"
+        components: "main"
+        signed_by: "{{ postgresql_repo_gpg_key }}"
+        state: present
+        architectures:
+          - amd64
+          - arm64
+        enabled: true
+      vars:
+        _distro: "{{ ansible_facts.distribution }}"
       changed_when: false
+      when: is_deb882 | bool
+
+    - name: Update apt repos
+      ansible.builtin.apt:
+        update_cache: true
