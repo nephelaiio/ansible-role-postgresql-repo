@@ -15,7 +15,7 @@
     - name: Update dnf cache
       ansible.builtin.dnf:
         update_cache: true
-        enablerepo: "pgdg*"
+        disablerepo: "pgdg*"
       changed_when: false
 
 - name: Install apt PostgreSQL repo
